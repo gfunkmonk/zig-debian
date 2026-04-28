@@ -57,7 +57,7 @@ jobs:
         run: ./build_zig_oldstable_ubuntu.sh ${{ inputs.zig_oldstable_version }} ${{ inputs.build_version }} ${{ inputs.architecture }}
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: artifact
           path: |
@@ -65,26 +65,29 @@ jobs:
             zig-stable_*.deb
             zig-oldstable_*.deb
 
-
   release-zig:
-    name: (Draft-)Release zig for Debian
+    name: Release zig for Debian
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build-zig
     steps:
       - name: Download All Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifact
 
       - name: Publish Release Draft
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          draft: true
+          prerelease: false
+          draft: false
+          make_latest: true
           files: |
             zig_*.deb
             zig-stable_*.deb
             zig-oldstable_*.deb
           name: ${{ inputs.zig_stable_version }}+${{ inputs.build_version }}
-          tag_name: ${{ env.RELEASE_TAG }}
+          # BUG WAS HERE: tag_name referenced env.RELEASE_TAG which was never
+          # set anywhere in the workflow, producing an empty/null release tag.
+          tag_name: ${{ inputs.zig_stable_version }}+${{ inputs.build_version }}
           fail_on_unmatched_files: true
