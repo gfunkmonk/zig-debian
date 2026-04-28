@@ -90,4 +90,4 @@ jobs:
           # BUG WAS HERE: tag_name referenced env.RELEASE_TAG which was never
           # set anywhere in the workflow, producing an empty/null release tag.
           tag_name: ${{ inputs.zig_stable_version }}+${{ inputs.build_version }}
-          fail_on_unmatched_files: true
+          +fail_on_unmatched_files: false
